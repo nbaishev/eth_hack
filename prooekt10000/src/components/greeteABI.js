@@ -7,6 +7,8 @@ export const greeterABI = [
           type: "string",
         },
       ],
+
+      
       stateMutability: "nonpayable",
       type: "constructor",
     },
