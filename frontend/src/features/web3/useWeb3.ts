@@ -1,28 +1,59 @@
-import { useState } from 'react';
-import { ethers } from 'ethers';
+import { useState, useEffect } from "react";
+import { ethers } from "ethers";
+
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
 export const useWeb3 = () => {
-  const [account, setAccount] = useState<string | null>(null);
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
+  const [account, setAccount] = useState<string | null>(null);
 
+  // Подключение кошелька
   const connectWallet = async () => {
-    if (window.ethereum) {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send('eth_requestAccounts', []);
-        const signer = await provider.getSigner();
-
-        setProvider(provider);
-        setSigner(signer);
-        setAccount(accounts[0]);
-      } catch (error) {
-        console.error('Ошибка подключения:', error);
+    try {
+      if (!window.ethereum) {
+        alert("Установите MetaMask!");
+        return;
       }
-    } else {
-      alert('Установите MetaMask!');
+
+      const _provider = new ethers.BrowserProvider(window.ethereum);
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const _signer = await _provider.getSigner();
+      const address = await _signer.getAddress();
+
+      setProvider(_provider);
+      setSigner(_signer);
+      setAccount(address);
+      localStorage.setItem("walletAddress", address);
+      return address;
+    } catch (error: any) {
+      if (error.code === 4001) {
+        console.warn("Пользователь отклонил подключение");
+      } else {
+        console.error("Ошибка подключения кошелька:", error);
+      }
     }
   };
 
-  return { connectWallet, account, provider, signer };
+  // Отключение кошелька
+  const disconnectWallet = () => {
+    setAccount(null);
+    setSigner(null);
+    setProvider(null);
+    localStorage.removeItem("walletAddress");
+  };
+
+  // Восстановление при перезагрузке страницы
+  useEffect(() => {
+    const saved = localStorage.getItem("walletAddress");
+    if (saved) {
+      connectWallet();
+    }
+  }, []);
+
+  return { provider, signer, account, connectWallet, disconnectWallet };
 };

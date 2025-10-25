@@ -6,6 +6,8 @@ import './App.css';
 import Home from './pages/Home.tsx';
 import Footer from './components/UI/footer/Footer.tsx';
 import GlacierPage from './pages/GlacierPage.tsx';
+import Success from './pages/Success.tsx'
+import ErrorPage from './pages/ErrorPage.tsx';
 
 const App = () => {
   return (
@@ -21,6 +23,8 @@ const App = () => {
           <Route path="/about" element={<Home />} />
           <Route path="/examples" element={<Home />} />
           <Route path="/calculator" element={<Home />} />
+          <Route path="/success" element={<Success />} />
+          <Route path="/error" element={<ErrorPage />} />
           <Route path="*" element={<h1>Not found</h1>} />
         </Routes>
       </main>
