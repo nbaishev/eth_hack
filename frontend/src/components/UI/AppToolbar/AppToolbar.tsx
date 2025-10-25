@@ -37,7 +37,7 @@ const AppToolbar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { connectWallet, account } = useWeb3();
+  const { connectWallet, disconnectWallet, account } = useWeb3();
 
   const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
     if (
@@ -163,12 +163,14 @@ const AppToolbar = () => {
 
           <Box display="flex" alignItems="center">
             {account ? (
-                <Button variant="outlined">{account.slice(0, 6)}...{account.slice(-4)}</Button>
-              ) : (
-                <Button variant="contained" onClick={connectWallet}>
-                  Подключить кошелёк
-                </Button>
-              )}
+              <Button variant="outlined" onClick={() => disconnectWallet()}>
+                {account.slice(0, 6)}...{account.slice(-4)} (Disconnect)
+              </Button>
+            ) : (
+              <Button variant="contained" onClick={() => connectWallet()}>
+                Connect Wallet
+              </Button>
+            )}
             {user ? <UserMenu user={user} /> : <NavLinkStyled to="/login">SIGN IN</NavLinkStyled>}
           </Box>
         </Toolbar>

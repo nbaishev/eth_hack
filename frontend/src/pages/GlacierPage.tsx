@@ -102,27 +102,41 @@ const GlacierPage = () => {
     );
   }
 
-  const { signer, connectWallet } = useWeb3();
+  const { signer, account, connectWallet } = useWeb3();
 
   const handleBuyNFT = async () => {
     try {
-      if (!signer) {
-        await connectWallet();
-        return;
-      }
+       if (!signer || !account) {
+        await connectWallet(); // пробуем подключиться
+          if (!signer) {
+            navigate("/error", { state: { message: "Кошелёк не подключен" } });
+            return;
+          }
+        }
 
       const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
       const tx = await contract.invest({
         value: ethers.parseEther('0.001'),
       });
 
-      await tx.wait();
-      alert('Поздравляем! Вы приобрели NFT ледника ❄️');
-    } catch (err) {
-      console.error(err);
-      alert('Ошибка при покупке NFT');
+      const receipt = await tx.wait();
+      const txHash = receipt.transactionHash ?? receipt.hash ?? tx.hash;
+
+      // переадресация на страницу успеха с передачей хеша
+      navigate("/success", { state: { txHash } });
+    } catch (err: any) {
+      console.error("buy error", err);
+      
+      const message =
+      err?.code === 4001
+        ? "Вы отменили транзакцию"
+        : err?.reason || "Произошла ошибка при транзакции";
+
+    navigate("/error", { state: { message } });
     }
   }
+
+  const glacier = glacierData[0];
 
   return (
     <Container maxWidth="lg">
@@ -142,6 +156,24 @@ const GlacierPage = () => {
         ></Button>
       </Box>
 
+      {/* === Изображение ледника === */}
+      <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <img
+          src={glacier.image || '/assets/glacier1.jpg'}
+          alt={glacier.name}
+          style={{
+            width: '100%',
+            maxHeight: 400,
+            objectFit: 'cover',
+            borderRadius: '16px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+          }}
+        />
+        <Typography variant="caption" display="block" sx={{ mt: 1, color: 'gray' }}>
+          Фото: {glacier.name}
+        </Typography>
+      </Box>
+
       {/* График ледника */}
       <Box sx={{ marginTop: 2 }}>
         <GlacierGraph
@@ -149,7 +181,7 @@ const GlacierPage = () => {
           glacierId={glacierData[0]?.glacier_id} // Передаем ID ледника
         />
       </Box>
-            <Box sx={{ textAlign: 'center', marginTop: 4 }}>
+      <Box sx={{ textAlign: 'center', marginTop: 4 }}>
         <Button
           variant="contained"
           color="primary"
