@@ -1,0 +1,35 @@
+* {
+    box-sizing: border-box;
+}
+
+#root {
+    margin: 0 auto;
+    text-align: center;
+    font-family: Fira Sans, sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    background-color: #fff;
+    color: #555;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Минимальная высота страницы на 100% от высоты окна */
+}
+
+html, body {
+    height: 100%; /* Задаём 100% высоты для всего документа */
+    margin: 0;
+}
+
+main {
+    flex: 1; /* Контент растягивается, занимая всё доступное пространство */
+    color: #555;
+}
+
+.MuiDrawer-paper {
+    box-shadow: none !important;
+}
+
+.MuiFilledInput-root:hover:not(.Mui-disabled):before {
+    border-bottom: none !important;
+}
+

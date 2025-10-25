@@ -1,0 +1,7 @@
+node_modules
+.idea
+package.json
+package-lock.json
+nodemon.json
+index.html
+.eslintrc.cjs

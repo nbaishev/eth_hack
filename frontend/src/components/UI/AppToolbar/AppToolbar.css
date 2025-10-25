@@ -1,0 +1,11 @@
+.nav-link {
+    color: rgb(85, 85, 85);
+    font-size: 14px;
+    text-decoration: none;
+    margin-left: 20px;
+    cursor: pointer;
+}
+
+.nav-link:hover {
+    color: #000; /* Изменение цвета на черный при наведении */
+}
