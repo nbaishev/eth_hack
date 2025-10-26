@@ -2,49 +2,67 @@
 pragma solidity ^0.8.20;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.0.0/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.0.0/contracts/utils/ReentrancyGuard.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.0.0/contracts/access/Ownable.sol";
 
-/**
- * @title GlacierNFT
- * @notice NFT токенизация искусственных ледников с функцией инвестирования
- */
-contract GlacierNFT is ERC721URIStorage, Ownable {
-    uint256 public nextId;
-    uint256 public totalInvested;
+/// @title Glacier NFT Marketplace
+/// @notice Пользователь минтит NFT, а владелец получает оплату
+contract GlacierNFTMarketplace is ERC721URIStorage, ReentrancyGuard, Ownable {
+    uint256 private _tokenIds;
+    uint256 public mintPrice = 0.01 ether; // цена за один NFT
 
-    event GlacierMinted(uint256 indexed tokenId, address indexed owner, string uri);
-    event Invested(address indexed investor, uint256 amount);
-    event Withdrawn(address indexed owner, uint256 amount);
+    event Minted(address indexed buyer, uint256 indexed tokenId, string tokenURI, uint256 price);
+    event MintPriceUpdated(uint256 newPrice);
+    event FundsWithdrawn(address indexed owner, uint256 amount);
 
-    constructor() ERC721("Artificial Glacier", "GLCR") Ownable(msg.sender) {}
+    constructor(string memory name_, string memory symbol_)
+        ERC721(name_, symbol_)
+        Ownable(msg.sender)
+    {}
 
-    /// Минт NFT ледника (только владелец контракта)
-    function mintGlacier(address to, string calldata tokenURI) external onlyOwner returns (uint256) {
-        nextId++;
-        uint256 tokenId = nextId;
-        _safeMint(to, tokenId);
-        _setTokenURI(tokenId, tokenURI);
-        emit GlacierMinted(tokenId, to, tokenURI);
-        return tokenId;
+    /// Установить цену за минт (только владелец)
+    function setMintPrice(uint256 _newPrice) external onlyOwner {
+        mintPrice = _newPrice;
+        emit MintPriceUpdated(_newPrice);
     }
 
-    /// Инвестирование в проект ледников
-    function invest() external payable {
-        require(msg.value > 0, "Investment must be > 0");
-        totalInvested += msg.value;
-        emit Invested(msg.sender, msg.value);
+    /// Минтит NFT: пользователь платит, NFT получает
+    function mint(string calldata tokenURI_) external payable nonReentrant returns (uint256) {
+        require(msg.value >= mintPrice, "Not enough ETH to mint");
+        require(bytes(tokenURI_).length > 0, "Token URI required");
+
+        _tokenIds++;
+        uint256 newTokenId = _tokenIds;
+
+        _safeMint(msg.sender, newTokenId);
+        _setTokenURI(newTokenId, tokenURI_);
+
+        // ✅ Отправляем оплату владельцу контракта
+        (bool sent, ) = payable(owner()).call{value: mintPrice}("");
+        require(sent, "Payment to owner failed");
+
+        // ✅ Если пользователь переплатил — вернуть сдачу
+        if (msg.value > mintPrice) {
+            payable(msg.sender).transfer(msg.value - mintPrice);
+        }
+
+        emit Minted(msg.sender, newTokenId, tokenURI_, mintPrice);
+        return newTokenId;
     }
 
-    /// Вывод собранных средств (только владелец)
-    function withdraw() external onlyOwner {
-        uint256 amount = address(this).balance;
-        require(amount > 0, "Nothing to withdraw");
-        payable(owner()).transfer(amount);
-        emit Withdrawn(owner(), amount);
+    /// Владелец может снять средства, если есть остаток
+    function withdraw(uint256 amount) external onlyOwner nonReentrant {
+        require(address(this).balance >= amount, "Insufficient balance");
+        (bool sent, ) = payable(owner()).call{value: amount}("");
+        require(sent, "Withdraw failed");
+        emit FundsWithdrawn(owner(), amount);
     }
 
-    /// Просмотр баланса контракта
-    function contractBalance() external view returns (uint256) {
-        return address(this).balance;
+    /// Получение текущего ID токена
+    function currentTokenId() external view returns (uint256) {
+        return _tokenIds;
     }
+
+    receive() external payable {}
+    fallback() external payable {}
 }
