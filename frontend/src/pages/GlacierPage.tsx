@@ -36,13 +36,14 @@ const GlacierPage = () => {
 
   const handleBuyNFT = async () => {
     try {
-       if (!signer || !account) {
+      if (!signer || !account) {
         await connectWallet(); // пробуем подключиться
           if (!signer) {
             navigate("/error", { state: { message: "Wallet is not connected" } });
             return;
           }
         }
+      }
 
       const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
       const tx = await contract.mint(
@@ -54,7 +55,7 @@ const GlacierPage = () => {
       const txHash = receipt.transactionHash ?? receipt.hash ?? tx.hash;
 
       // переадресация на страницу успеха с передачей хеша
-      navigate("/success", { state: { txHash } });
+      navigate('/success', { state: { txHash } });
     } catch (err: any) {
       console.error("buy error", err);
       
@@ -63,9 +64,11 @@ const GlacierPage = () => {
         ? "You cancelled transaction"
         : err?.reason || "Error during transaction";
 
-    navigate("/error", { state: { message } });
+      const message = err?.code === 4001 ? 'Вы отменили транзакцию' : err?.reason || 'Произошла ошибка при транзакции';
+
+      navigate('/error', { state: { message } });
     }
-  }
+  };
 
   return (
     <Container maxWidth="lg">
@@ -104,6 +107,8 @@ const GlacierPage = () => {
         </Typography>
       </Box>
 
+      
+
       {/* График ледника */}
       <Box sx={{ marginTop: 2 }}>
         <GlacierGraph
@@ -124,9 +129,7 @@ const GlacierPage = () => {
           Buy NFT glacier
         </Button>
       </Box>
-
     </Container>
-
   );
 };
 
