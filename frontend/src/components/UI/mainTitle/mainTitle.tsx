@@ -62,7 +62,18 @@ const MainTitle = () => {
           }}
         >
           Artificial Glacier
-          <br /> Formation Monitoring System
+          <br /> NFT Marketplace
+        </Typography>
+        <Typography
+          variant="h3"
+          sx={{
+            fontSize: '16px',
+            fontWeight: '400',
+            color: '#fff',
+            textAlign: 'left',
+          }}
+        >
+          Proof of Ice — the Future of Water
         </Typography>
       </Container>
       <ArrowButton onClick={handleScroll}>

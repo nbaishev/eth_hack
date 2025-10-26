@@ -12,21 +12,21 @@ const ErrorPage = () => {
 
   const message =
     state?.message ||
-    "Произошла ошибка. Возможно вы не подключили кошелёк или отменили транзакцию.";
+    "Error. Probably you didn't connect the wallet or cancelled transaction.";
 
   return (
     <Box sx={{ padding: 4, textAlign: "center" }}>
       <Typography variant="h4" color="error">
-        ❌ Ошибка
+        ❌ Error
       </Typography>
       <Typography sx={{ mt: 2 }}>{message}</Typography>
 
       <Box sx={{ mt: 4, display: "flex", justifyContent: "center", gap: 2 }}>
         <Button variant="contained" onClick={() => navigate("/")}>
-          На главную
+          To main
         </Button>
         <Button variant="outlined" onClick={() => navigate(-1)}>
-          Назад
+          Return
         </Button>
       </Box>
     </Box>

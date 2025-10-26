@@ -13,9 +13,9 @@ const Success = () => {
 
   return (
     <Box sx={{ padding: 4, textAlign: "center" }}>
-      <Typography variant="h4">Успешно! 🎉</Typography>
+      <Typography variant="h4">Successfull! 🎉</Typography>
       <Typography sx={{ mt: 2 }}>
-        Транзакция:{" "}
+        Transaction:{" "}
         {txHash ? (
           <a
             href={`https://sepolia.etherscan.io/tx/${txHash}`}
@@ -31,11 +31,11 @@ const Success = () => {
 
       <Box sx={{ mt: 4, display: "flex", justifyContent: "center", gap: 2 }}>
         <Button variant="contained" onClick={() => navigate("/")}>
-          На главную
+          To main
         </Button>
 
         <Button color="secondary" variant="outlined" onClick={() => disconnectWallet()}>
-          Открепить кошелёк
+          Disconnect wallet
         </Button>
       </Box>
     </Box>
